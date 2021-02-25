@@ -1,12 +1,24 @@
 const db = require("../db");
 const partialUpdate = require('../helpers/partialUpdate.js')
+const Tag = require('./Tag')
 
 class Post {
     static async create(data){
         const result = await db.query(
             `INSERT INTO post (title, content, author, locale)
             VALUES ($1, $2, $3, $4) RETURNING id, title, content, author, locale, created_at`, [data.title, data.content, data.author, data.locale])
-        return result.rows[0]    
+        
+        let post = result.rows[0]
+
+        if (data.tags){
+            for (let tag of data.tags){
+                await Tag.create(tag)
+                await Tag.tagPost(tag, post.id)
+            }
+            post = {...post, tags: data.tags}
+        }
+
+        return post  
     }
 
     /** Find all applications (can filter on terms in data) */
@@ -38,9 +50,14 @@ class Post {
     static async findOne(id){
         const postRes = await db.query(`
         SELECT * FROM post WHERE id = $1`, [id])
+        let post = postRes.rows[0]
 
-        if (postRes.rows.length !== 0){
-            return postRes.rows[0]
+        const tagsRes = await db.query(`SELECT tag FROM post_tag WHERE post_id = $1`, [id])
+        let tags = tagsRes.rows.map(tag=>tag.tag)
+
+        if (post){
+            post.tags = tags
+            return post
         } else {
             return {message: "No records found"}
         }

@@ -1,5 +1,6 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
+const partialUpdate = require('../helpers/partialUpdate')
 
 const BCRYPT_WORK_FACTOR = 10;
 
@@ -64,6 +65,69 @@ class User{
 
         return result.rows[0];
     }
+
+   /** Find all users. */
+   static async findAll() {
+        const result = await db.query(
+            `SELECT id, username, first_name, last_name
+            FROM "user"
+            ORDER BY id`);
+
+        return result.rows;
+    }
+
+    /** Find user by ID */
+    static async findOne(id){
+        const result = await db.query(`
+            SELECT id, username, first_name, last_name from "user" WHERE id = $1`, [id])
+
+        if (result.rows.length > 0){
+            return result.rows[0]
+        } else {
+            return false
+        }
+    }
+
+    static async update(id, data){
+        // Encrypt password if changing passwords
+        if (data.password) {
+            data.password = await bcrypt.hash(data.password, BCRYPT_WORK_FACTOR);
+        }
+
+        let { query, values } = partialUpdate(
+            "user",
+            data,
+            "id",
+            id
+        );
+
+        const result = await db.query(query, values);
+        const user = result.rows[0];
+
+        if (!user) {
+            let notFound = new Error(`There exists no user '${id}`);
+            notFound.status = 404;
+            throw notFound;
+        }
+
+        delete user.password;
+
+        return result.rows[0];
+    }
+
+    static async delete(id){
+        // delete user by id
+        const result = await db.query(`
+        DELETE FROM "user" WHERE id = $1 RETURNING *`, [id])
+
+        if (result.rows.length === 0 ){
+            return false 
+        } else {
+            return true
+        }
+    }
+
+
 }
 
 module.exports = User
