@@ -1,6 +1,7 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 const partialUpdate = require('../helpers/partialUpdate')
+const jwt = require('jsonwebtoken');
 
 const BCRYPT_WORK_FACTOR = 10;
 
@@ -55,7 +56,7 @@ class User{
             `INSERT INTO "user" 
             (username, password, first_name, last_name) 
           VALUES ($1, $2, $3, $4) 
-          RETURNING username, first_name, last_name`,
+          RETURNING username, first_name, last_name, id`,
             [
                 data.username,
                 hashedPassword,

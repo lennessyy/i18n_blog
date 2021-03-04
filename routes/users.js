@@ -3,12 +3,14 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User')
+const createToken = require('../helpers/createToken')
 
 router.post('/', async (req, res, next)=>{
     try{
         let data = req.body;
         const result = await User.register(data);
-        return res.staus(201).json(result);
+        const token = createToken(result)
+        return res.status(201).json({token});
     } catch(e){
         return next(e)
     }

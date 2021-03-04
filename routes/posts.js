@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post')
+const {ensureCorrectUser} = require('../middleware/auth')
 
 router.get('/', async (req, res, next)=>{
     try{
@@ -23,7 +24,7 @@ router.get('/:id', async (req, res, next)=>{
     }
 })
 
-router.post('/', async (req, res, next)=>{
+router.post('/', ensureCorrectUser,async (req, res, next)=>{
     try{
         const result = await Post.create(req.body)
         return res.json(result)
