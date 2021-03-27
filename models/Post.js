@@ -49,7 +49,8 @@ class Post {
     /** Find one post by its ID */
     static async findOne(id){
         const postRes = await db.query(`
-        SELECT * FROM post WHERE id = $1`, [id])
+        SELECT post.id AS id, locale, post.created_at AS created_at, title, content, username FROM post
+        JOIN "user" u ON u.id = author WHERE post.id = $1`, [id])
         let post = postRes.rows[0]
 
         const tagsRes = await db.query(`SELECT tag FROM post_tag WHERE post_id = $1`, [id])
