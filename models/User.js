@@ -12,7 +12,8 @@ class User{
             `SELECT username, 
                     password, 
                     first_name, 
-                    last_name, 
+                    last_name,
+                    id
               FROM "user" 
               WHERE username = $1`,
             [data.username]

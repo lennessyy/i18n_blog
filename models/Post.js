@@ -49,7 +49,7 @@ class Post {
     /** Find one post by its ID */
     static async findOne(id){
         const postRes = await db.query(`
-        SELECT post.id AS id, locale, post.created_at AS created_at, title, content, username FROM post
+        SELECT post.id AS id, locale, post.created_at AS created_at, title, content, username AS author FROM post
         JOIN "user" u ON u.id = author WHERE post.id = $1`, [id])
         let post = postRes.rows[0]
 

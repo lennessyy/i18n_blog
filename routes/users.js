@@ -16,6 +16,17 @@ router.post('/', async (req, res, next)=>{
     }
 })
 
+router.post('/authenticate', async (req, res, next)=>{
+    try{
+        let data = req.body
+        const result = await User.authenticate(data)
+        const token = createToken(result)
+        return res.status(200).json({token});
+    } catch(e){
+        return next(e)
+    }
+})
+
 router.get('/:id', async (req, res, next)=>{
     try{
         let id = req.params.id
